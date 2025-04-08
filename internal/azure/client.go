@@ -6,6 +6,8 @@ import (
     "fmt"
     "io"
     "net/http"
+    "net/url"
+    "strings"
     "os"
     "regexp"
 )
@@ -170,15 +172,17 @@ func DownloadPackage(feedUrl, name, version string) string {
 }
 
 func extractOrg(feedUrl string) string {
-    parts := []rune(feedUrl)
-    idx := 0
-    for i := 0; i < len(parts); i++ {
-        if string(parts[i:i+1]) == "/" {
-            idx++
-            if idx == 4 {
-                return string(parts[8:i])
-            }
-        }
+    parsed, err := url.Parse(feedUrl)
+    if err != nil {
+        panic("❌ Invalid feed URL")
     }
-    return "sp880706"
+
+    // Trim leading and trailing slashes and split
+    parts := strings.Split(strings.Trim(parsed.Path, "/"), "/")
+
+    if len(parts) < 1 {
+        panic("❌ Could not extract organization from URL")
+    }
+
+    return parts[0]
 }
