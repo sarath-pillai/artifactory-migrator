@@ -5,11 +5,12 @@ import (
     "os"
 
     "nuget-migrator/internal/azure"
+    "nuget-migrator/internal/github"
 )
 
 func main() {
     if len(os.Args) != 2 {
-        fmt.Println("Usage: nuget-migrator <any_azure_devops_url_for_org>")
+        fmt.Println("Usage: nuget-migrator <azure_feed_url>")
         os.Exit(1)
     }
 
@@ -20,6 +21,8 @@ func main() {
         fmt.Printf("📦 %s\n", pkg.Name)
         for _, version := range pkg.Versions {
             fmt.Printf("  └─ %s\n", version)
+            file := azure.DownloadPackage(feedUrl, pkg.Name, version)
+            github.PushToGitHub(file)
         }
     }
 }

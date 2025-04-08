@@ -7,6 +7,7 @@ import (
     "io"
     "net/http"
     "os"
+    "regexp"
 )
 
 var PAT = os.Getenv("AZURE_PAT")
@@ -18,7 +19,6 @@ type Package struct {
 
 func getFeedID(org string) string {
     apiUrl := fmt.Sprintf("https://feeds.dev.azure.com/%s/_apis/packaging/feeds?api-version=6.0-preview.1", org)
-
     req, _ := http.NewRequest("GET", apiUrl, nil)
     req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(":" + PAT)))
     req.Header.Set("Accept", "*/*")
@@ -132,9 +132,41 @@ func fetchPackageVersions(org, feedID, packageID string) []string {
     return versions
 }
 
-func DownloadPackage(_, name, version string) string {
-    fmt.Printf("📦 Skipping actual download of %s@%s\n", name, version)
-    return fmt.Sprintf("%s.%s.nupkg", name, version)
+func DownloadPackage(feedUrl, name, version string) string {
+    org := extractOrg(feedUrl)
+    feedID := getFeedID(org)
+
+    url := fmt.Sprintf("https://pkgs.dev.azure.com/%s/_apis/packaging/feeds/%s/nuget/packages/%s/versions/%s/content?api-version=6.0-preview.1",
+        org, feedID, name, version)
+
+    fmt.Printf("⬇️  Downloading %s@%s from Azure...\n", name, version)
+
+    req, _ := http.NewRequest("GET", url, nil)
+    req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(":" + PAT)))
+    req.Header.Set("Accept", "*/*")
+
+    resp, err := http.DefaultClient.Do(req)
+    if err != nil {
+        panic(err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != 200 {
+        body, _ := io.ReadAll(resp.Body)
+        panic(fmt.Sprintf("Download failed (%d): %s", resp.StatusCode, body))
+    }
+
+    safeVersion := regexp.MustCompile(`[\/:"*?<>|]`).ReplaceAllString(version, "-")
+    fileName := fmt.Sprintf("%s.%s.nupkg", name, safeVersion)
+
+    out, err := os.Create(fileName)
+    if err != nil {
+        panic(err)
+    }
+    defer out.Close()
+    io.Copy(out, resp.Body)
+
+    return fileName
 }
 
 func extractOrg(feedUrl string) string {

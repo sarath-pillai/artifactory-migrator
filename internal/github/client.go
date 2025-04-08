@@ -7,20 +7,21 @@ import (
 )
 
 var (
-    GithubPAT    = os.Getenv("GITHUB_TOKEN")
-    GithubUser   = os.Getenv("GITHUB_USER")
-    GithubSource = "https://nuget.pkg.github.com/" + GithubUser + "/index.json"
+    GitHubPAT  = os.Getenv("GITHUB_TOKEN")
+    GitHubUser = os.Getenv("GITHUB_USER")
 )
 
 func PushToGitHub(nupkgPath string) {
-    if GithubPAT == "" || GithubUser == "" {
-        fmt.Println("❌ GITHUB_TOKEN and GITHUB_USER environment variables must be set.")
+    if GitHubPAT == "" || GitHubUser == "" {
+        fmt.Println("❌ GITHUB_TOKEN and GITHUB_USER must be set")
         return
     }
 
+    githubSource := fmt.Sprintf("https://nuget.pkg.github.com/%s/index.json", GitHubUser)
+
     cmd := exec.Command("dotnet", "nuget", "push", nupkgPath,
-        "--source", GithubSource,
-        "--api-key", GithubPAT,
+        "--source", githubSource,
+        "--api-key", GitHubPAT,
         "--skip-duplicate",
     )
 
