@@ -9,9 +9,11 @@ Usage:
   artifactory-migrator <azure_feed_url>
 
 Environment variables:
+```bash
   AZURE_PAT       Azure DevOps personal access token
   GITHUB_TOKEN    GitHub personal access token
   GITHUB_USER     GitHub username or org
+```
 
 Example:
 
