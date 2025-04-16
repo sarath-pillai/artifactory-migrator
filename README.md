@@ -83,15 +83,3 @@ artifactory-migrator --package SampleNugetPackage --pkg-version 1.2.3 https://pk
 Current version: **v0.1.0**
 
 ---
-
-## 🧑‍💻 Contributing
-
-Pull requests and issues are welcome!  
-For feature requests or bug reports, please open an [issue](https://github.com/your-repo/issues).
-
----
-
-## 📄 License
-
-MIT License (see [LICENSE](LICENSE) for details)
-
