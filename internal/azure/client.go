@@ -51,54 +51,71 @@ func getFeedID(org string) string {
     return result.Value[0].ID
 }
 
-func FetchPackages(feedUrl string) []Package {
-    if PAT == "" {
-        panic("❌ AZURE_PAT is not set!")
-    }
+func FetchPackages(feedUrl string, filterPkg string, filterVersion string) []Package {
+	if PAT == "" {
+		panic("❌ AZURE_PAT is not set!")
+	}
 
-    fmt.Printf("🔐 Using AZURE_PAT starting with: %s...\n", PAT[:5])
-    fmt.Printf("🔍 Fetching packages using feed discovery via: %s\n", feedUrl)
+	fmt.Printf("🔐 Using AZURE_PAT starting with: %s...\n", PAT[:5])
+	fmt.Printf("🔍 Fetching packages using feed discovery via: %s\n", feedUrl)
 
-    org := extractOrg(feedUrl)
-    feedID := getFeedID(org)
+	org := extractOrg(feedUrl)
+	feedID := getFeedID(org)
 
-    apiUrl := fmt.Sprintf("https://feeds.dev.azure.com/%s/_apis/Packaging/Feeds/%s/Packages?api-version=6.0-preview.1", org, feedID)
-    req, _ := http.NewRequest("GET", apiUrl, nil)
-    req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(":" + PAT)))
-    req.Header.Set("Accept", "*/*")
+	apiUrl := fmt.Sprintf("https://feeds.dev.azure.com/%s/_apis/Packaging/Feeds/%s/Packages?api-version=6.0-preview.1", org, feedID)
+	req, _ := http.NewRequest("GET", apiUrl, nil)
+	req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(":"+PAT)))
+	req.Header.Set("Accept", "*/*")
 
-    resp, err := http.DefaultClient.Do(req)
-    if err != nil {
-        panic(err)
-    }
-    defer resp.Body.Close()
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 
-    if resp.StatusCode != 200 {
-        body, _ := io.ReadAll(resp.Body)
-        panic(fmt.Sprintf("Package list query failed (%d): %s", resp.StatusCode, body))
-    }
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		panic(fmt.Sprintf("Package list query failed (%d): %s", resp.StatusCode, body))
+	}
 
-    var pkgList struct {
-        Value []struct {
-            ID   string `json:"id"`
-            Name string `json:"name"`
-        } `json:"value"`
-    }
+	var pkgList struct {
+		Value []struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"value"`
+	}
 
-    body, _ := io.ReadAll(resp.Body)
-    json.Unmarshal(body, &pkgList)
+	body, _ := io.ReadAll(resp.Body)
+	json.Unmarshal(body, &pkgList)
 
-    var pkgs []Package
-    for _, item := range pkgList.Value {
-        versions := fetchPackageVersions(org, feedID, item.ID)
-        pkgs = append(pkgs, Package{
-            Name:     item.Name,
-            Versions: versions,
-        })
-    }
+	var pkgs []Package
+	for _, item := range pkgList.Value {
+                if filterPkg != "" && strings.ToLower(item.Name) != strings.ToLower(filterPkg) {
+    			continue
+		}
+		versions := fetchPackageVersions(org, feedID, item.ID)
+		if filterVersion != "" {
+			found := false
+			for _, v := range versions {
+				if v == filterVersion {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+			versions = []string{filterVersion}
+		}
+		pkgs = append(pkgs, Package{
+			Name:     item.Name,
+			Versions: versions,
+		})
+	}
 
-    return pkgs
+	return pkgs
 }
+
 
 func fetchPackageVersions(org, feedID, packageID string) []string {
     apiUrl := fmt.Sprintf("https://feeds.dev.azure.com/%s/_apis/Packaging/Feeds/%s/Packages/%s/Versions?api-version=6.0-preview.1", org, feedID, packageID)

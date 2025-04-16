@@ -16,25 +16,35 @@ func usage() {
 Artifactory Migrator - Migrate NuGet packages from Azure DevOps to GitHub Packages
 
 Usage:
-  artifactory-migrator <azure_feed_url>
+  artifactory-migrator [--package <name>] [--pkg-version <version>] <azure_feed_url>
 
 Environment variables:
   AZURE_PAT       Azure DevOps personal access token
   GITHUB_TOKEN    GitHub personal access token
   GITHUB_USER     GitHub username or org
 
-Example:
+Examples:
   $ export AZURE_PAT=xxxx
   $ export GITHUB_TOKEN=yyyy
   $ export GITHUB_USER=myuser
+
+  # Migrate everything
   $ artifactory-migrator https://pkgs.dev.azure.com/orgname
 
+  # Migrate all versions of one package
+  $ artifactory-migrator --package SampleNugetPackage https://pkgs.dev.azure.com/orgname
+
+  # Migrate a specific version of a package
+  $ artifactory-migrator --package SampleNugetPackage --pkg-version 1.0.0 https://pkgs.dev.azure.com/orgname
 `)
 }
 
 func main() {
-	showVersion := flag.Bool("version", false, "Print version")
+	showVersion := flag.Bool("version", false, "Print tool version")
 	help := flag.Bool("help", false, "Show help message")
+	pkgName := flag.String("package", "", "Specific NuGet package name to migrate")
+	pkgVersion := flag.String("pkg-version", "", "Specific version to migrate (requires --package)")
+
 	flag.Usage = usage
 	flag.Parse()
 
@@ -49,12 +59,18 @@ func main() {
 	}
 
 	if len(flag.Args()) != 1 {
+		fmt.Println("❌ You must provide the Azure feed URL.")
 		flag.Usage()
 		os.Exit(1)
 	}
 
+	if *pkgVersion != "" && *pkgName == "" {
+		fmt.Println("❌ --pkg-version requires --package to be set.")
+		os.Exit(1)
+	}
+
 	feedUrl := flag.Arg(0)
-	pkgs := azure.FetchPackages(feedUrl)
+	pkgs := azure.FetchPackages(feedUrl, *pkgName, *pkgVersion)
 
 	for _, pkg := range pkgs {
 		fmt.Printf("📦 %s\n", pkg.Name)
