@@ -59,6 +59,42 @@ artifactory-migrator --package SampleNugetPackage https://pkgs.dev.azure.com/org
 artifactory-migrator --package SampleNugetPackage --pkg-version 1.2.3 https://pkgs.dev.azure.com/orgname
 ```
 
+### 4. Package Filtering with Regex
+
+Match packages that start with a prefix:
+
+```bash
+export AZURE_PACKAGE_FILTER="^MyLib"
+```
+Matches: MyLib, MyLibrary.Utils, MyLib123
+
+Match packages that end with a suffix:
+
+```bash
+export AZURE_PACKAGE_FILTER="Client$"
+```
+Matches: AzureClient, GitClient, Http.Client
+
+Match packages that contain a specific word:
+
+```bash
+export AZURE_PACKAGE_FILTER="Analytics"
+```
+Matches: UserAnalytics, My.Analytics.Core, AnalyticsData
+
+Match exact package name:
+```bash
+export AZURE_PACKAGE_FILTER="^Exact.Package.Name$"
+```
+Only matches Exact.Package.Name
+
+Match packages with numeric suffix:
+
+```bash
+export AZURE_PACKAGE_FILTER=".*[0-9]+$"
+```
+Matches: MyLib2, Toolkit123, Package1
+
 ---
 
 ## 📝 Notes
@@ -67,6 +103,7 @@ artifactory-migrator --package SampleNugetPackage --pkg-version 1.2.3 https://pk
 - Package name matching is **case-insensitive**
 - If you specify `--pkg-version`, you **must** also specify `--package`
 - Local `.nupkg` files are deleted after successful upload to GitHub Packages
+- If you use AZURE_PACKAGE_FILTER and --package together, AZURE_PACKAGE_FILTER will be ignored.
 - The tool outputs progress and errors to the console
 
 ---
