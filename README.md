@@ -95,6 +95,23 @@ export AZURE_PACKAGE_FILTER=".*[0-9]+$"
 ```
 Matches: MyLib2, Toolkit123, Package1
 
+### 5. Using a specific feed in azure
+`AZURE_FEED` Specifies the name of a specific Azure DevOps feed to use.
+If unset, the tool will attempt to auto-discover the first NuGet-compatible feed available.
+
+Use when your organization has multiple feeds.
+
+Example: export AZURE_FEED=MyFeed
+
+### 6. Upstream Control
+
+`AZURE_INCLUDE_UPSTREAM`
+Controls whether packages from upstream sources (e.g., NuGet.org, Maven Central) are included.
+
+true, 1, or yes: include upstream/public packages.
+Any other value or unset: only include packages directly uploaded to the feed.
+
+Example: `export AZURE_INCLUDE_UPSTREAM=true`
 ---
 
 ## 📝 Notes
