@@ -71,7 +71,10 @@ func main() {
 
 	feedUrl := flag.Arg(0)
 	pkgs := azure.FetchPackages(feedUrl, *pkgName, *pkgVersion)
-
+	if len(pkgs) == 0 {
+		fmt.Println("⚠️  No matching packages found for given filters.")
+		os.Exit(1)
+	}
 	for _, pkg := range pkgs {
 		fmt.Printf("📦 %s\n", pkg.Name)
 		for _, version := range pkg.Versions {
@@ -86,4 +89,3 @@ func main() {
 		}
 	}
 }
-
