@@ -293,13 +293,15 @@ func DownloadPackage(feedUrl, name, version string) string {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		fmt.Printf("❌ HTTP request error while downloading %s@%s: %v\n", name, version, err)
+		return ""
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		body, _ := io.ReadAll(resp.Body)
-		panic(fmt.Sprintf("Download failed (%d): %s", resp.StatusCode, body))
+		fmt.Printf("⚠️  Skipping %s@%s — Download failed (HTTP %d): %s\n", name, version, resp.StatusCode, body)
+		return ""
 	}
 
 	safeVersion := regexp.MustCompile(`[\/:"*?<>|]`).ReplaceAllString(version, "-")
@@ -307,7 +309,8 @@ func DownloadPackage(feedUrl, name, version string) string {
 
 	out, err := os.Create(fileName)
 	if err != nil {
-		panic(err)
+		fmt.Printf("❌ Failed to create file %s: %v\n", fileName, err)
+		return ""
 	}
 	defer out.Close()
 	io.Copy(out, resp.Body)

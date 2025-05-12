@@ -80,6 +80,9 @@ func main() {
 		for _, version := range pkg.Versions {
 			fmt.Printf("  └─ %s\n", version)
 			file := azure.DownloadPackage(feedUrl, pkg.Name, version)
+			if file == "" {
+				continue // Skip failed downloads
+			}
 			github.PushToGitHub(file)
 			if err := os.Remove(file); err != nil {
 				fmt.Printf("⚠️  Failed to delete %s: %v\n", file, err)
