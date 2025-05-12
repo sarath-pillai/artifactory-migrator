@@ -18,7 +18,7 @@
 Set these **environment variables** before running the tool:
 
 - `AZURE_PAT` — Azure DevOps Personal Access Token (with read access to Azure Artifacts)
-- `GITHUB_TOKEN` — GitHub Personal Access Token (with `write:packages` scope)
+- `GH_TKN` — GitHub Personal Access Token (with `write:packages` scope)
 - `GITHUB_USER` — GitHub username or organization (target for publishing)
 
 ---
@@ -41,7 +41,7 @@ artifactory-migrator [--package <name>] [--pkg-version <version>] <azure_feed_ur
 
 ```bash
 export AZURE_PAT=xxxx
-export GITHUB_TOKEN=yyyy
+export GH_TKN=yyyy
 export GITHUB_USER=myuser
 
 artifactory-migrator https://pkgs.dev.azure.com/orgname

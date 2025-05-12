@@ -20,12 +20,12 @@ Usage:
 
 Environment variables:
   AZURE_PAT       Azure DevOps personal access token
-  GITHUB_TOKEN    GitHub personal access token
+  GH_TKN    GitHub personal access token
   GITHUB_USER     GitHub username or org
 
 Examples:
   $ export AZURE_PAT=xxxx
-  $ export GITHUB_TOKEN=yyyy
+  $ export GH_TKN=yyyy
   $ export GITHUB_USER=myuser
 
   # Migrate everything

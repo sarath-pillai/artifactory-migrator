@@ -8,13 +8,13 @@ import (
 )
 
 var (
-	GitHubPAT  = os.Getenv("GITHUB_TOKEN")
+	GitHubPAT  = os.Getenv("GH_TKN")
 	GitHubUser = os.Getenv("GITHUB_USER")
 )
 
 func PushToGitHub(nupkgPath string) {
 	if GitHubPAT == "" || GitHubUser == "" {
-		fmt.Println("❌ GITHUB_TOKEN and GITHUB_USER must be set")
+		fmt.Println("❌ GH_TKN and GITHUB_USER must be set")
 		return
 	}
 
